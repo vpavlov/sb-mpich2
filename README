@@ -1,0 +1,18 @@
+SB-MPICH2 is an SBCL binding for the MPICH2 library. It implements the
+Message Passing Interface standard and enables distributed parallel computing.
+
+Author:
+
+  Valentin Pavlov <x.pavlov@gmail.com>
+
+License:
+
+  MIT-style. See file LICENSE for details.
+
+Bugs and Issues:
+
+  None yet.
+
+Usage example:
+
+  mpirun -n 4 `which sbcl` --script ./test.lisp
