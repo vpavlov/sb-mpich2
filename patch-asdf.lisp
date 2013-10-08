@@ -30,34 +30,45 @@
 (in-package #:asdf)
 
 ;;; This is sraped off from asdf version 2.015.3
+;; (defun* implementation-identifier ()
+;;   (labels
+;;       ((maybe-warn (value fstring &rest args)
+;;          (cond (value)
+;;                (t (apply 'warn fstring args)
+;;                   "unknown"))))
+;;     (let ((lisp (maybe-warn (implementation-type)
+;;                             (compatfmt
+;; 			     "~@<No implementation feature found in ~a.~@:>")
+;;                             *implementation-features*))
+;;           (os   (maybe-warn (first-feature *os-features*)
+;;                             (compatfmt
+;; 			     "~@<No OS feature found in ~a.~@:>")
+;; 			    *os-features*))
+;;           (arch (or #-clisp
+;;                     (maybe-warn (first-feature *architecture-features*)
+;;                                 (compatfmt
+;; 				 "~@<No architecture feature found in ~a.~@:>")
+;;                                 *architecture-features*)))
+;;           (version
+;; 	   (maybe-warn (lisp-version-string)
+;; 		       "Don't know how to get Lisp implementation version.")))
+;;       ;; Include the MPI rank in the return value. The '~7,'0,'/3:D/' format
+;;       ;; splits the rank in triples (e.g. 0/292/345) thus creating a
+;;       ;; sub-directory structure, because we might end up with
+;;       ;; hundreds of thousands of nodes and we don't want this in a single
+;;       ;; directory.
+;;       (substitute-if
+;;        #\_ #'(lambda (x) (find x " :\\(){}[]$#`'\""))
+;;        (format nil "~7,'0,'/3:D/~(~a~@{~@[-~a~]~}~)"
+;; 	       sb-mpich2::*mpi-world-rank* lisp version os arch)))))
+
+;;; asdf 2.26
 (defun* implementation-identifier ()
-  (labels
-      ((maybe-warn (value fstring &rest args)
-         (cond (value)
-               (t (apply 'warn fstring args)
-                  "unknown"))))
-    (let ((lisp (maybe-warn (implementation-type)
-                            (compatfmt
-			     "~@<No implementation feature found in ~a.~@:>")
-                            *implementation-features*))
-          (os   (maybe-warn (first-feature *os-features*)
-                            (compatfmt
-			     "~@<No OS feature found in ~a.~@:>")
-			    *os-features*))
-          (arch (or #-clisp
-                    (maybe-warn (first-feature *architecture-features*)
-                                (compatfmt
-				 "~@<No architecture feature found in ~a.~@:>")
-                                *architecture-features*)))
-          (version
-	   (maybe-warn (lisp-version-string)
-		       "Don't know how to get Lisp implementation version.")))
-      ;; Include the MPI rank in the return value. The '~7,'0,'/3:D/' format
-      ;; splits the rank in triples (e.g. 0/292/345) thus creating a
-      ;; sub-directory structure, because we might end up with
-      ;; hundreds of thousands of nodes and we don't want this in a single
-      ;; directory.
-      (substitute-if
-       #\_ #'(lambda (x) (find x " :\\(){}[]$#`'\""))
-       (format nil "~7,'0,'/3:D/~(~a~@{~@[-~a~]~}~)"
-	       sb-mpich2::*mpi-world-rank* lisp version os arch)))))
+  (substitute-if
+   #\_ #'(lambda (x) (find x " /:;&^\\|?<>(){}[]$#`'\""))
+   (format nil "~7,'0,'/3:D/~(~a~@{~@[-~a~]~}~)"
+	   sb-mpich2::*mpi-world-rank*
+           (or (implementation-type) (lisp-implementation-type))
+           (or (lisp-version-string) (lisp-implementation-version))
+           (or (operating-system) (software-type))
+           (or (architecture) (machine-type)))))
